@@ -35,15 +35,20 @@ class TimeBasedCache(CacheMechanism):
     def get_data(self, data):
         """ Returns data from cache if present and database if absent"""
         # check if data is in cache and elapsed time hasn't exceeded time limit.
-        for last_cached_time, cached_data in self.cache.items():
-            elapsed_time_since_last_cached = time.time() - last_cached_time
-            if data == cached_data and elapsed_time_since_last_cached < self.cache_time_limit:
-                return cached_data
+        if data in self.cache.values():
+            for last_cached_time, cached_data in self.cache.items():
+                elapsed_time_since_last_cached = time.time() - last_cached_time
+                if data == cached_data and elapsed_time_since_last_cached < self.cache_time_limit:
+                    return cached_data
+                
+                # delete cached data after time limit
+                self.cache.pop(last_cached_time)
+                break
 
-        # fetch data from database if data is absent
+        # fetch data from database
         fetched_data = self.get_data_from_database(data)
-        
-        # set data
+
+        # cache data
         return self.set_data(fetched_data)
 
 
