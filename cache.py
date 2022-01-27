@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 from cachetools import TTLCache
-import time
-from database import Database
 
     
 class CacheMechanism(ABC):
