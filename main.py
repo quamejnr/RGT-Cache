@@ -1,59 +1,36 @@
-import time
-from abc import ABC, abstractmethod
+from time import sleep
+from cache import CacheMechanism, TimeBasedCache
+from database import Database, NotFoundInDatabaseError, RedisDatabase
 
 
-class CacheMechanism(ABC):
-    """A class to implement caching mechanism"""
-    
-    cache = {}
-    database = [1,2,3,4,5]
+class CacheApplication():
 
-    @abstractmethod
-    def get_data_from_database(self, data):
-        pass
+    def __init__(self, database: Database, cache_mechanism: CacheMechanism) -> None:
+        self.database = database
+        self.cache = cache_mechanism
 
-    @abstractmethod
-    def get_data(self, data):
-        pass
-    
-    @abstractmethod
-    def set_data(self, data):
-        pass
+    def get(self, key):
+        data = self.cache.get_data(key)
+        if not data:
+            try:
+                data = self.database.get_data(key)
+                self.cache.set_data(key, data)
 
-
-class TimeBasedCache(CacheMechanism):
-    """A class to implement time-based cache mechanism"""
-
-    def __init__(self, cache_time_limit) -> None:
-        self.cache_time_limit = cache_time_limit
-
-    def get_data_from_database(self, data):
-        """ Returns data from database"""
-        if data in self.database:
-            return data
-
-    def get_data(self, data):
-        """ Returns data from cache if present and database if absent"""
-        # check if data is in cache and elapsed time hasn't exceeded time limit.
-        if data in self.cache.values():
-            for last_cached_time, cached_data in self.cache.items():
-                elapsed_time_since_last_cached = time.time() - last_cached_time
-                if data == cached_data and elapsed_time_since_last_cached < self.cache_time_limit:
-                    return cached_data
-                
-                # delete cached data after time limit
-                self.cache.pop(last_cached_time)
-                break
-
-        # fetch data from database
-        fetched_data = self.get_data_from_database(data)
-
-        # cache data
-        return self.set_data(fetched_data)
-
-
-    def set_data(self, data):
-        """ Caches data with a timestamp."""
-        cached_time = time.time()
-        self.cache[cached_time] = data
+            except NotFoundInDatabaseError as e:
+                return e
+        
         return data
+
+
+if __name__ == '__main__':
+    database = RedisDatabase()
+    cache = TimeBasedCache(5)
+
+    app = CacheApplication(database=database, cache_mechanism=cache)
+
+    print(app.get('Ghana'))
+    print(app.get('Gabon'))
+    print(cache.cache)
+    sleep(5)
+    print(cache.cache)
+
