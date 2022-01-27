@@ -19,9 +19,9 @@ class CacheMechanism(ABC):
 class TimeBasedCache(CacheMechanism):
     """A class to implement time-based cache mechanism"""
 
-    def __init__(self, cache_time_limit) -> None:
-        self.cache_time_limit = cache_time_limit
-        self.cache = TTLCache(maxsize=30, ttl=self.cache_time_limit)  # creates a dictionary which deletes data after a time limit
+    def __init__(self, cache_time_limit_in_seconds) -> None:
+        self.cache_time_limit_in_seconds = cache_time_limit_in_seconds
+        self.cache = TTLCache(maxsize=30, ttl=self.cache_time_limit_in_seconds)  # creates a dictionary which deletes data after a time limit
 
 
     def get_data(self, id):

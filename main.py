@@ -1,4 +1,3 @@
-from time import sleep
 from cache import CacheMechanism, TimeBasedCache
 from database import Database, NotFoundInDatabaseError, RedisDatabase
 
@@ -27,10 +26,4 @@ if __name__ == '__main__':
     cache = TimeBasedCache(5)
 
     app = CacheApplication(database=database, cache_mechanism=cache)
-
-    print(app.get('Ghana'))
-    print(app.get('Gabon'))
-    print(cache.cache)
-    sleep(5)
-    print(cache.cache)
 
